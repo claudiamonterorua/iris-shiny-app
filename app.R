@@ -22,7 +22,7 @@ ui <- fluidPage(
       h4("Histogram"),
       
       selectInput(
-        "hist_var",
+        "dimension",
         "Dimension:",
         choices = names(iris)[1:4]
       ),
@@ -32,7 +32,7 @@ ui <- fluidPage(
       h4("Scatter plot"),
       
       radioButtons(
-        "comparison_type",
+        "compared_dimensions",
         "Compared dimensions:",
         choices = c("Lengths", "Widths"),
         selected = "Lengths"
@@ -42,12 +42,12 @@ ui <- fluidPage(
     mainPanel(
       
       h4(textOutput("hist_title")),
-      plotOutput("histPlot"),
+      plotOutput("hist_plot"),
       
       br(),
       
       h4(textOutput("scatter_title")),
-      plotOutput("scatterPlot"),
+      plotOutput("scatter_plot"),
       
       br(),
       
@@ -59,48 +59,48 @@ ui <- fluidPage(
 
 server <- function(input, output) {
   
-  data_filtered <- reactive({
+  iris_data <- reactive({
     iris[iris$Species == input$species, ]
   })
   
   output$hist_title <- renderText({
-    paste("Histogram for", input$species, "of", input$hist_var)
+    paste("Histogram for", input$species, "of", input$dimension)
   })
   
-  output$histPlot <- renderPlot({
+  output$hist_plot <- renderPlot({
     hist(
-      data_filtered()[[input$hist_var]],
+      iris_data()[[input$dimension]],
       col = "lightblue",
-      xlab = input$hist_var,
+      xlab = input$dimension,
       main = NULL
     )
   })
   
   output$scatter_title <- renderText({
-    if (input$comparison_type == "Lengths") {
+    if (input$compared_dimensions == "Lengths") {
       paste("Scatter plot for ", input$species, "of Sepal.Length vs Petal.Length")
     } else {
       paste("Scatter plot for ", input$species, "of Sepal.Width vs Petal.Width")
     }
   })
   
-  output$scatterPlot <- renderPlot({
+  output$scatter_plot <- renderPlot({
     
-    if (input$comparison_type == "Lengths") {
-      x <- data_filtered()$Sepal.Length
-      y <- data_filtered()$Petal.Length
+    if (input$compared_dimensions == "Lengths") {
+      x <- iris_data()$Sepal.Length
+      y <- iris_data()$Petal.Length
       xlab <- "Sepal.Length"
       ylab <- "Petal.Length"
     } else {
-      x <- data_filtered()$Sepal.Width
-      y <- data_filtered()$Petal.Width
+      x <- iris_data()$Sepal.Width
+      y <- iris_data()$Petal.Width
       xlab <- "Sepal.Width"
       ylab <- "Petal.Width"
     }
     
     plot(
       x, y,
-      col = "darkgreen",
+      col = "steelblue",
       pch = 19,
       xlab = xlab,
       ylab = ylab,
@@ -109,7 +109,7 @@ server <- function(input, output) {
   })
   
   output$table <- renderTable({
-    data_filtered()
+    iris_data()
   })
 }
 
