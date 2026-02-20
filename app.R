@@ -24,7 +24,6 @@ ui <- fluidPage(
       
       sidebarLayout(
         
-        # ===== SIDEBAR =====
         sidebarPanel(
           
           h4("Filters"),
@@ -44,27 +43,22 @@ ui <- fluidPage(
           )
         ),
         
-        # ===== MAIN PANEL =====
         mainPanel(
           
           tabsetPanel(
             
-            # ---- SCATTER ----
             tabPanel("Scatter",
                      plotOutput("scatter_plot", height = "450px")
             ),
             
-            # ---- HISTOGRAM ----
             tabPanel("Histogram",
                      plotOutput("hist_plot", height = "450px")
             ),
             
-            # ---- BOXPLOT ----
             tabPanel("Boxplot",
                      plotOutput("box_plot", height = "450px")
             ),
             
-            # ---- DATA ----
             tabPanel("Data",
                      DTOutput("raw_data")
             )
@@ -76,21 +70,27 @@ ui <- fluidPage(
 
 server <- function(input, output) {
   
-  # ===== REACTIVE FILTER =====
   iris_filtered <- reactive({
-    
     req(input$species)
-    
-    iris %>%
-      filter(Species %in% input$species)
+    iris %>% filter(Species %in% input$species)
   })
   
   # ===== SCATTER =====
   output$scatter_plot <- renderPlot({
     
-    ggplot(iris_filtered(),
-           aes(x = Sepal.Length,
-               y = Petal.Length,
+    df <- iris_filtered()
+    
+    if (grepl("Length", input$variable)) {
+      x_var <- "Sepal.Length"
+      y_var <- "Petal.Length"
+    } else {
+      x_var <- "Sepal.Width"
+      y_var <- "Petal.Width"
+    }
+    
+    ggplot(df,
+           aes(x = .data[[x_var]],
+               y = .data[[y_var]],
                color = Species)) +
       geom_point(size = 3, alpha = 0.85) +
       theme_minimal(base_size = 15) +
@@ -100,9 +100,9 @@ server <- function(input, output) {
         "virginica" = "#AD1457"
       )) +
       labs(
-        title = "Sepal.Length vs Petal.Length",
-        x = "Sepal.Length",
-        y = "Petal.Length"
+        title = paste("Scatter of", x_var, "vs", y_var),
+        x = x_var,
+        y = y_var
       )
   })
   
